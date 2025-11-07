@@ -17,7 +17,6 @@ from utils.udp_sender import UDPSender
 from utils.serial_comm import SerialComm
 from utils.log_sender import LogSender
 from core.config import settings
-from core.db import db
 from schemas.skyn import SessionGetResponse
 
 

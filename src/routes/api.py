@@ -13,10 +13,6 @@ BASE_DIR = os.path.dirname(__file__)
 TEMPLATES_DIR = os.path.normpath(os.path.join(BASE_DIR, "..", "frontend", "static", "templates"))
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
-@router.get("/health")
-async def health():
-    return {"status": "ok", "version": "0.1.0"}
-
 @router.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def page_home(request: Request):
     return templates.TemplateResponse("admin/login.html", {"request": request})
