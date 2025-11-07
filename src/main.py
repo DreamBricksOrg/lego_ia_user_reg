@@ -8,7 +8,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.config import settings
 
 from routes.api import router as api_router
-from routes.registrations import router as reg_router
 from routes.lego import router as lego_router
 
 from middlewares.replay_guard import ReplayGuardMiddleware
@@ -52,7 +51,6 @@ def create_app() -> FastAPI:
 
 
     app.include_router(api_router)
-    app.include_router(reg_router)
     app.include_router(lego_router)
 
     @app.get("/alive")
