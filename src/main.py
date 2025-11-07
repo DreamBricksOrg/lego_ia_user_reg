@@ -9,9 +9,7 @@ from core.config import settings
 
 from routes.api import router as api_router
 from routes.registrations import router as reg_router
-from routes.auth import router as auth_router
-from routes.admin import router as admin_router
-from routes.skyn import router as skyn_router
+from routes.lego import router as lego_router
 
 from middlewares.replay_guard import ReplayGuardMiddleware
 
@@ -50,16 +48,12 @@ def create_app() -> FastAPI:
 
 
     app.mount("/design", StaticFiles(directory=STATIC_DIR / "design"), name="design")
-    app.mount("/templates", StaticFiles(directory=STATIC_DIR / "templates"), name="templates")
-    app.mount("/templates/admin", StaticFiles(directory=STATIC_DIR / "templates" / "admin"), name="templates_admin")
-    app.mount("/templates/skyn", StaticFiles(directory=STATIC_DIR / "templates" / "skyn"), name="templates_skyn")
+    app.mount("/templates/lego", StaticFiles(directory=STATIC_DIR / "templates" / "lego"), name="templates_lego")
 
 
     app.include_router(api_router)
     app.include_router(reg_router)
-    app.include_router(auth_router)
-    app.include_router(admin_router)
-    app.include_router(skyn_router)
+    app.include_router(lego_router)
 
     @app.get("/alive")
     async def alive():

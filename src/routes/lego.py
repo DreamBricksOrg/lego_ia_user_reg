@@ -6,7 +6,6 @@ import time
 from fastapi import APIRouter, HTTPException, Request
 from datetime import datetime, timezone
 
-from schemas.skyn import QRCodeInitResponse, SessionCompleteRequest, SessionCompleteResponse
 from starlette.responses import HTMLResponse
 from starlette.templating import Jinja2Templates
 from pathlib import Path
@@ -17,20 +16,20 @@ from utils.udp_sender import UDPSender
 from utils.serial_comm import SerialComm
 from utils.log_sender import LogSender
 from core.config import settings
-from schemas.skyn import SessionGetResponse
+from schemas.lego import SessionGetResponse, QRCodeInitResponse, SessionCompleteRequest, SessionCompleteResponse
 
 
 log = structlog.get_logger()
-router = APIRouter(prefix="/api/skyn")
+router = APIRouter(prefix="/api/lego")
 udp_sender = UDPSender(port=settings.UDP_PORT)
 serial_comm = SerialComm(port=settings.SERIAL_PORT, baudrate=settings.SERIAL_BAUDRATE)
 serial_lock = asyncio.Lock()  # Lock para controlar acesso à serial
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-template_dir = BASE_DIR / "frontend" / "static" / "templates" / "skyn" / "html"
+template_dir = BASE_DIR / "frontend" / "static" / "templates" / "lego" / "html"
 templates = Jinja2Templates(directory=str(template_dir))
 
-SESSIONS_COLL = db["skyn_sessions"]  # coleção Mongo para sessões
+SESSIONS_COLL = db["lego_sessions"]  # coleção Mongo para sessões
 
 
 def _now_utc():
@@ -132,7 +131,7 @@ async def update_inventory_on_drop(log_sender, context="session"):
     
     try:
         # Caminho para o arquivo de inventário
-        inventory_file = Path(__file__).resolve().parent.parent / "frontend" / "static" / "templates" / "skyn" / "assets" / "inventory.json"
+        inventory_file = Path(__file__).resolve().parent.parent / "frontend" / "static" / "templates" / "lego" / "assets" / "inventory.json"
         
         # Carrega dados atuais do inventário
         with open(inventory_file, 'r', encoding='utf-8') as f:
@@ -189,7 +188,7 @@ async def init_qrcode():
     # Salvar sessão no Mongo
     await save_session(session_id, shortener_data.slug, short_url)
 
-    log.info("skyn-session-created", session_id=session_id, short_url=short_url)
+    log.info("lego-session-created", session_id=session_id, short_url=short_url)
     return QRCodeInitResponse(
         session_id=session_id,
         short_url=short_url,
@@ -264,7 +263,7 @@ async def complete_session(req: SessionCompleteRequest):
     finally:
         # 3) Finaliza sessão (sempre) com completed|failed
         await finalize_session(req.session_id, status_final)
-        log.info("skyn-session-finalized", session_id=req.session_id, status=status_final)
+        log.info("lego-session-finalized", session_id=req.session_id, status=status_final)
 
 
 @router.get("/session/{sid}", response_model=SessionGetResponse)
@@ -433,7 +432,7 @@ async def update_inventory(request: Request):
         log_sender = LogSender()
         
         # Caminho para o arquivo de inventário
-        inventory_file = Path(__file__).resolve().parent.parent / "frontend" / "static" / "templates" / "skyn" / "assets" / "inventory.json"
+        inventory_file = Path(__file__).resolve().parent.parent / "frontend" / "static" / "templates" / "lego" / "assets" / "inventory.json"
         
         # Carrega dados atuais para preservar campos existentes
         current_data = {}
