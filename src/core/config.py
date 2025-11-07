@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 from typing import Optional
 
 class Settings(BaseSettings):
-    APP_NAME: str = Field("LogCenter API", env="APP_NAME")
+    APP_NAME: str = "lego_ia_sd_user_reg"
     ENV: str = Field("dev", env="ENV")
     HOST: str = Field("0.0.0.0", env="HOST")
     PORT: int = Field(5005, env="PORT")
@@ -17,10 +17,14 @@ class Settings(BaseSettings):
     LOGCENTER_PROJECT_ID: str = Field(..., env="LOGCENTER_PROJECT_ID")
     LOGCENTER_MIN_LEVEL: str = Field("INFO", env="LOGCENTER_MIN_LEVEL")
     CADASTRO_BASE_URL: str = Field(..., env="CADASTRO_BASE_URL")
+    CRM_BASE_URL: str = Field(..., env="CRM_BASE_URL")
+    CRM_API_KEY: str =  Field(..., env="CRM_API_KEY")
+    CRM_MALL_ID: int = Field(84, env="CRM_MALL_ID")
+    CRM_TRACK_TYPE: str = Field("APPLICATION", env="CRM_TRACK_TYPE")
+    CRM_TRACK_NAME: str = Field("Totem LEGO – IA", env="CRM_TRACK_NAME")
     UDP_PORT: int = Field(5004, env="UDP_PORT")
     SERIAL_PORT: str = Field("COM3", env="SERIAL_PORT")
     SERIAL_BAUDRATE: int = Field(9600, env="SERIAL_BAUDRATE")
-    MALL_ID: int = Field(84, env="MALL_ID")
 
 
     class Config:
