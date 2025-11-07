@@ -1,20 +1,45 @@
 import structlog
+import asyncio
 from pathlib import Path
-
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import settings
+from core.agent import sdk_log
 
 from routes.api import router as api_router
 from routes.lego import router as lego_router
 
 from middlewares.replay_guard import ReplayGuardMiddleware
+from middleware.sdk_audit import SdkAuditMiddleware
 
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "frontend" / "static"
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # === STARTUP ===
+    async def _delayed_startup_log():
+        await asyncio.sleep(0.3)
+        await sdk_log(
+            "INFO",
+            "LogCenter startup",
+            data={"env": settings.ENV, "version": "0.1-dev"},
+            status="OK",
+        )
+
+    asyncio.create_task(_delayed_startup_log())
+    yield
+    # === SHUTDOWN ===
+    await sdk_log(
+        "INFO",
+        "LogCenter shutdown",
+        data={"env": settings.ENV, "version": "0.1-dev"},
+        status="INFO",
+    )
 
 def create_app() -> FastAPI:
     app = FastAPI(title=settings.APP_NAME, version="0.1.5.6-dev", lifespan=lifespan)
@@ -42,7 +67,7 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"]
     )
-
+    app.add_middleware(SdkAuditMiddleware)
     app.add_middleware(ReplayGuardMiddleware, ttl_seconds=4)
 
 
