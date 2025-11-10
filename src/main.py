@@ -10,6 +10,7 @@ from core.config import settings
 from core.agent import sdk_log
 
 from routes.api import router as api_router
+from routes.crm import router as crm_router
 from routes.totem import router as totem_router
 
 from middlewares.replay_guard import ReplayGuardMiddleware
@@ -76,6 +77,7 @@ def create_app() -> FastAPI:
 
 
     app.include_router(api_router)
+    app.include_router(crm_router)
     app.include_router(totem_router)
 
     @app.get("/alive")

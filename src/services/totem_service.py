@@ -50,12 +50,27 @@ async def set_step(session_id: str, step: str, extra: Optional[Dict[str, Any]] =
     await save_session(s)
     return s
 
-async def set_crm_result(session_id: str, *, isRegistered: bool, isComplete: bool, nextStep: str) -> Dict[str, Any]:
+async def set_crm_result(
+    session_id: str,
+    *,
+    isRegistered: bool,
+    isComplete: bool,
+    nextStep: str,
+    cpf: str | None = None,
+    **_extras,   # ignora quaisquer chaves adicionais
+) -> Dict[str, Any]:
     s = await get_session(session_id)
     if s is None:
         raise KeyError("invalid session")
     s.setdefault("crm", {})
-    s["crm"].update({"isRegistered": isRegistered, "isComplete": isComplete, "nextStep": nextStep})
+    s["crm"].update({
+        "isRegistered": isRegistered,
+        "isComplete": isComplete,
+        "nextStep": nextStep,
+    })
+    if cpf:
+        s["crm"]["cpf"] = cpf
+
     s["step"] = "data" if nextStep == "register" else "continue"
     await save_session(s)
     return s

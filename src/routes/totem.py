@@ -42,7 +42,13 @@ async def session_check(body: CheckWithSession):
     svc = CRMService()
     try:
         res = svc.check_and_next_step(body.cpf)
-        s = await set_crm_result(body.sessionId, **res)
+        s = await set_crm_result(
+            body.sessionId,
+            isRegistered=res["isRegistered"],
+            isComplete=res["isComplete"],
+            nextStep=res["nextStep"],
+            cpf=body.cpf,  # guarda cpf na sessão
+        )
         return {"ok": True, "session": s}
     except Exception as e:
         raise HTTPException(502, str(e))
