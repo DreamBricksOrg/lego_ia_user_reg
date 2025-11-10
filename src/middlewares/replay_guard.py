@@ -15,8 +15,8 @@ class ReplayGuardMiddleware:
     Escopo: instância do processo (memória local).
     """
     def __init__(self, app: ASGIApp, ttl_seconds: int = 5, protected_paths: tuple[str, ...] = (
-        "/api/lego/session/complete",
-        "/api/lego/form",
+        "/api/totem/session/authorize",
+        "/api/totem/register",
     )):
         self.app = app
         self.ttl = ttl_seconds
