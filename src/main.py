@@ -13,7 +13,7 @@ from routes.api import router as api_router
 from routes.lego import router as lego_router
 
 from middlewares.replay_guard import ReplayGuardMiddleware
-from middleware.sdk_audit import SdkAuditMiddleware
+from middlewares.sdk_audit import SdkAuditMiddleware
 
 
 BASE_DIR = Path(__file__).resolve().parent
