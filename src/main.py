@@ -10,7 +10,7 @@ from core.config import settings
 from core.agent import sdk_log
 
 from routes.api import router as api_router
-from routes.lego import router as lego_router
+from routes.totem import router as totem_router
 
 from middlewares.replay_guard import ReplayGuardMiddleware
 from middlewares.sdk_audit import SdkAuditMiddleware
@@ -76,7 +76,7 @@ def create_app() -> FastAPI:
 
 
     app.include_router(api_router)
-    app.include_router(lego_router)
+    app.include_router(totem_router)
 
     @app.get("/alive")
     async def alive():

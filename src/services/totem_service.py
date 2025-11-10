@@ -1,0 +1,70 @@
+from __future__ import annotations
+import uuid
+import json
+from datetime import datetime, timezone
+from typing import Any, Dict, Optional
+from core.redis_client import get_redis
+
+SESSION_TTL_SECONDS = 60 * 30  # 30 minutes
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+def _key(session_id: str) -> str:
+    return f"totem:session:{session_id}"
+
+async def create_session() -> Dict[str, Any]:
+    session_id = uuid.uuid4().hex
+    data = {
+        "sessionId": session_id,
+        "createdAt": _now_iso(),
+        "updatedAt": _now_iso(),
+        "step": "terms",
+        "flags": {},
+        "crm": {},
+        "meta": {},
+    }
+    r = get_redis()
+    await r.set(_key(session_id), json.dumps(data), ex=SESSION_TTL_SECONDS)
+    return data
+
+async def get_session(session_id: str) -> Optional[Dict[str, Any]]:
+    r = get_redis()
+    raw = await r.get(_key(session_id))
+    if not raw:
+        return None
+    return json.loads(raw)
+
+async def save_session(session: Dict[str, Any]) -> None:
+    session["updatedAt"] = _now_iso()
+    r = get_redis()
+    await r.set(_key(session["sessionId"]), json.dumps(session), ex=SESSION_TTL_SECONDS)
+
+async def set_step(session_id: str, step: str, extra: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    s = await get_session(session_id)
+    if s is None:
+        raise KeyError("invalid session")
+    s["step"] = step
+    if extra:
+        s.update(extra)
+    await save_session(s)
+    return s
+
+async def set_crm_result(session_id: str, *, isRegistered: bool, isComplete: bool, nextStep: str) -> Dict[str, Any]:
+    s = await get_session(session_id)
+    if s is None:
+        raise KeyError("invalid session")
+    s.setdefault("crm", {})
+    s["crm"].update({"isRegistered": isRegistered, "isComplete": isComplete, "nextStep": nextStep})
+    s["step"] = "data" if nextStep == "register" else "continue"
+    await save_session(s)
+    return s
+
+async def mark_authorized(session_id: str) -> Dict[str, Any]:
+    s = await set_step(session_id, "instructions")
+    s["flags"]["authorized"] = True
+    await save_session(s)
+    return s
+
+async def advance(session_id: str, to_step: str) -> Dict[str, Any]:
+    return await set_step(session_id, to_step)
