@@ -28,4 +28,4 @@ ENV PYTHONPATH=/app/src
 EXPOSE 5005
 
 # Comando padrão para rodar o servidor FastAPI
-CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--lifespan=on", "--log-level", "info"]
+CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "5005", "--lifespan=on", "--log-level", "info"]

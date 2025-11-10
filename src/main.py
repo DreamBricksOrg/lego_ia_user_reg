@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
     )
 
 def create_app() -> FastAPI:
-    app = FastAPI(title=settings.APP_NAME, version="0.1.5.6-dev", lifespan=lifespan)
+    app = FastAPI(title=settings.APP_NAME, version="0.1.-dev", lifespan=lifespan)
     # Structlog setup
     structlog.configure(
         processors=[
@@ -83,3 +83,5 @@ def create_app() -> FastAPI:
         return {"status": "ok", "env": settings.ENV}
 
     return app
+
+app = create_app()

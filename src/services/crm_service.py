@@ -15,6 +15,14 @@ class CRMService:
 
 
 def check_and_next_step(self, cpf: str) -> Dict[str, Any]:
+  if not getattr(settings, "CRM_API_KEY", None):
+    return {
+        "cpf": cpf,
+        "isRegistered": True,
+        "isComplete": True,
+        "mocked": True,
+        "nextStep": "pass"
+    }
   res = self.client.check_client(cpf)
   next_step = "pass" if (res["isRegistered"] and res["isComplete"]) else "register"
   return {**res, "nextStep": next_step}
