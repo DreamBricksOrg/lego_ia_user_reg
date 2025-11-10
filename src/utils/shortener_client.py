@@ -1,5 +1,3 @@
-# utils/shortener_client.py (ou core/shortener_client.py)
-
 import time
 import asyncio
 import httpx

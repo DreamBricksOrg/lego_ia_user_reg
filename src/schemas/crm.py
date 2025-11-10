@@ -5,7 +5,6 @@ from pydantic import BaseModel, EmailStr, Field
 from pydantic_br import CPF
 
 
-
 class CheckRequest(BaseModel):
   cpf: CPF = Field(..., description="CPF do cliente (somente números)")
 
