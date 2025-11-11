@@ -40,8 +40,6 @@ async def read_session(session_id: str):
 async def accept_terms(body: TermsRequest):
     if not body.accepted:
         raise HTTPException(400, "terms not accepted")
-    async with serial_lock:
-        udp_sender.send("INSTRUCOES")
     return await advance(body.sessionId, "check")
 
 
