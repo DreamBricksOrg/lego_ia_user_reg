@@ -1,0 +1,52 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    background-image: url('../images/background.png');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    width: 100vw;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.leia {
+    margin-top: 60px;
+    width: 100%;
+    text-align: center;
+}
+
+.terms-container {
+    width: 90%;
+    height: 400px;
+    margin-top: 30px;
+    text-align: justify;
+
+    background-color: white;
+    border-radius: 6px;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.terms-container p {
+    font-size: 12px;
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 2px 12px;
+    color: black;
+}
+
+#accept-btn {
+    margin-top: 40px;
+    width: 80%;
+}
+

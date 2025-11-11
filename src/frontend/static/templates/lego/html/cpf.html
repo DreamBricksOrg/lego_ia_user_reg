@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CPF</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/cpf.css') }}" />
+</head>
+
+<body>
+  <div class="container">
+    <div class="content">
+      <img class="logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="logo">
+
+      <div class="cpf-input">
+        <h3>INSIRA O SEU CPF</h3>
+        <input type="text" id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" />
+      </div>
+
+      <div id="next-btn" class="next-btn"></div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const input = document.getElementById('cpf');
+      if (!input) return;
+
+      function maskCPF(value) {
+        const digits = (value || '').replace(/\D/g, '').slice(0, 11);
+
+        if (digits.length <= 3) {
+          return digits;
+        } else if (digits.length <= 6) {
+          return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+        } else if (digits.length <= 9) {
+          return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+        }
+        return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+      }
+
+      input.addEventListener('input', function () {
+        const masked = maskCPF(input.value);
+        input.value = masked;
+      });
+
+      input.value = maskCPF(input.value);
+    });
+  </script>
+</body>
+
+</html>

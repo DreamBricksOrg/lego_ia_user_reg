@@ -1,0 +1,96 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+
+.container {
+    background-image: url('../images/background.png');
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+    width: 100vw;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo {
+    margin-top: 60px;
+    width: 150px;
+}
+
+form{
+    width: 100%;
+    height: 350px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(212, 10, 5) transparent;
+}
+
+form > *:last-child {
+    padding-bottom: 12px;
+}
+
+form::-webkit-scrollbar {
+    width: 8px;
+}
+form::-webkit-scrollbar-track {
+    background: transparent;
+}
+form::-webkit-scrollbar-thumb {
+    background-color: rgb(212, 10, 5);
+    border-radius: 4px;
+}
+
+
+.input-container {
+    width: 90%;
+    margin-top: 20px;
+}
+
+input{
+    width: 100%;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    color: black !important;
+    font-size: 1.2rem;
+    padding-left: 5px;
+}
+
+input::placeholder {
+    padding-left: 5px;
+    color: #ccc;
+}
+
+
+
+#next-btn{
+    width: 45%;
+    margin-top: 60px;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+.input-row {
+    display: flex;
+    gap: 12px;
+    width: 90%;
+    margin-top: 20px;
+}
+
+.input-row .input-container {
+    flex: 1;
+    margin-top: 0;
+}
+

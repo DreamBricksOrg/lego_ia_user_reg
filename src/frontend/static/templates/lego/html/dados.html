@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dados</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dados.css') }}" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="content">
+        <img class="logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="logo">
+
+        <form action="{{ url_for('dados') }}" method="post">
+          <div class="input-container">
+            <h3>E-MAIL</h3>
+            <input type="email" id="email" name="email" placeholder="email@exemplo.com" required />
+          </div>
+
+          <div class="input-container">
+            <h3>TELEFONE</h3>
+            <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required />
+          </div> 
+          
+          <div class="input-container">
+            <h3>DATA DE NASCIMENTO</h3>
+            <input type="date" id="aniversario" name="aniversario" required />
+          </div>
+
+          <div class="input-container">
+            <h3>CEP</h3>
+            <input type="text" id="cep" name="cep" inputmode="numeric" placeholder="00000-000" maxlength="9" required />
+          </div>
+
+          <div class="input-container">
+            <h3>LOGRADOURO</h3>
+            <input type="text" id="logradouro" name="logradouro" placeholder="Rua/Av. Exemplo" required />
+          </div>
+
+          <div class="input-row">
+            <div class="input-container">
+              <h3>NÚMERO</h3>
+              <input type="text" id="numero" name="numero" inputmode="numeric" placeholder="201" required />
+            </div>
+            <div class="input-container">
+              <h3>COMPLEMENTO</h3>
+              <input type="text" id="complemento" name="complemento" placeholder="Ap 101" />
+            </div>
+          </div>
+
+          <div class="input-container">
+            <h3>BAIRRO</h3>
+            <input type="text" id="bairro" name="bairro" placeholder="Bairro" required />
+          </div>
+
+          <div class="input-row">
+            <div class="input-container">
+              <h3>CIDADE</h3>
+              <input type="text" id="cidade" name="cidade" placeholder="Cidade" required />
+            </div>
+            <div class="input-container">
+              <h3>ESTADO</h3>
+              <input type="text" id="estado" name="estado" placeholder="Estado" required />
+            </div>
+          </div>
+        </form>
+
+        <img src="{{ url_for('static', filename='images/bt.png') }}" alt="next-btn" id="next-btn">
+  </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dados.js') }}"></script>
+  </body>
+  </html>
