@@ -7,8 +7,8 @@
 
 
 .container {
-    background-image: url('../images/background.png');
-    background-size: cover;
+    background-image: url('/templates/lego/assets/images/background.png');
+    background-size: cover; 
     background-position: center;
     height: 100vh;
     width: 100vw;
@@ -42,7 +42,7 @@
 .next-btn {
     margin-top: 3rem;
 
-    background-image: url('../images/bt.png');
+    background-image: url('/templates/lego/assets/images/bt.png');
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;

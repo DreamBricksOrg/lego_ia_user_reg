@@ -5,8 +5,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Termos</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/termos.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='base.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='termos.css') }}" />
 </head>
 
 <body>
@@ -43,7 +43,7 @@
         </p>
       </div>
 
-      <img id="accept-btn" src="{{ url_for('static', filename='images/termos_bt.png') }}" alt="accept-btn">
+      <img id="accept-btn" src="{{ url_for('templates_lego_assets', path='images/termos_bt.png') }}" alt="accept-btn">
     </div>
   </div>
 

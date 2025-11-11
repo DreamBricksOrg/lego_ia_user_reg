@@ -1,6 +1,6 @@
 @font-face {
   font-family: "Futuru Bold";
-  src: url("../fonts/Futuru-Bold-iF66d197b0e43bd.otf") format("opentype");
+  src: url("/templates/lego/assets/fonts/Futuru-Bold-iF66d197b0e43bd.otf") format("opentype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;

@@ -24,3 +24,23 @@ async def page_user(request: Request):
 @router.get("/admin", include_in_schema=False)
 async def page_admin(request: Request):
     return templates.TemplateResponse("admin/admin.html", {"request": request})
+
+@router.get("/lego/cpf", response_class=HTMLResponse, include_in_schema=False)
+async def cpf(request: Request):
+    return templates.TemplateResponse("lego/html/cpf.html", {"request": request})
+
+@router.get("/lego/dados", response_class=HTMLResponse, include_in_schema=False)
+async def dados(request: Request):
+    return templates.TemplateResponse("lego/html/dados.html", {"request": request})
+
+@router.get("/lego/resultado", response_class=HTMLResponse, include_in_schema=False)
+async def resultado(request: Request, image_url: str = ""):
+    return templates.TemplateResponse("lego/html/resultado.html", {"request": request, "image_url": image_url})
+
+@router.get("/lego/termos", response_class=HTMLResponse, include_in_schema=False)
+async def termos(request: Request):
+    return templates.TemplateResponse("lego/html/termos.html", {"request": request})
+
+@router.get("/lego/continue", response_class=HTMLResponse, include_in_schema=False)
+async def continue_page(request: Request):
+    return templates.TemplateResponse("lego/html/continue.html", {"request": request})

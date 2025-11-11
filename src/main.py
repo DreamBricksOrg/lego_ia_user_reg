@@ -72,8 +72,10 @@ def create_app() -> FastAPI:
     app.add_middleware(ReplayGuardMiddleware, ttl_seconds=4)
 
 
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     app.mount("/design", StaticFiles(directory=STATIC_DIR / "design"), name="design")
-    app.mount("/templates/lego", StaticFiles(directory=STATIC_DIR / "templates" / "lego"), name="templates_lego")
+    app.mount("/templates/lego/assets", StaticFiles(directory=STATIC_DIR / "templates" / "lego" / "assets"), name="templates_lego_assets")
+    app.mount("/templates/lego/css", StaticFiles(directory=STATIC_DIR / "templates" / "lego" / "css"), name="templates_lego_css")
 
 
     app.include_router(api_router)

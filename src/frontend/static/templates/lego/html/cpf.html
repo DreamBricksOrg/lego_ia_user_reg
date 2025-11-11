@@ -5,14 +5,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CPF</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/cpf.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='base.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='cpf.css') }}" />
 </head>
 
 <body>
   <div class="container">
     <div class="content">
-      <img class="logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="logo">
+      <img class="logo" src="{{ url_for('templates_lego_assets', path='images/logo.png') }}" alt="logo">
 
       <div class="cpf-input">
         <h3>INSIRA O SEU CPF</h3>
