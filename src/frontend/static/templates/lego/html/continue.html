@@ -6,8 +6,80 @@
     <title>Continue</title>
     <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='base.css') }}" />
     <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='continue.css') }}" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body>
       <div class="container"></div>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+          const params = new URLSearchParams(window.location.search);
+          const sid = params.get('sid');
+          if (!sid) {
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('Sessão não encontrada', 'Parâmetro "sid" ausente na URL.', 'error');
+            } else {
+              alert('Sessão não encontrada: parâmetro "sid" ausente na URL.');
+            }
+            return;
+          }
+
+          // Chama /totem/session/continue
+          try {
+            const cResp = await fetch('/totem/session/continue', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sessionId: sid }),
+            });
+            let cData = {};
+            try { cData = await cResp.json(); } catch (_) {}
+            if (!cResp.ok) {
+              const errText = (cData && cData.detail) ? String(cData.detail) : `Status ${cResp.status}`;
+              if (window.Swal && typeof window.Swal.fire === 'function') {
+                await Swal.fire('Erro ao continuar sessão', errText, 'error');
+              } else {
+                alert('Erro ao continuar sessão: ' + errText);
+              }
+              return;
+            }
+          } catch (err) {
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('Erro de rede', String(err), 'error');
+            } else {
+              alert('Erro de rede: ' + String(err));
+            }
+            return;
+          }
+
+          // Em seguida, chama /totem/authorize
+          try {
+            const aResp = await fetch('/totem/authorize', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sessionId: sid }),
+            });
+            let aData = {};
+            try { aData = await aResp.json(); } catch (_) {}
+            if (aResp.ok && (aData?.ok ?? true)) {
+              if (window.Swal && typeof window.Swal.fire === 'function') {
+                await Swal.fire('Autorizado', 'Aguarde as instruções no totem.', 'success');
+              }
+            } else {
+              const errText = (aData && aData.detail) ? String(aData.detail) : `Status ${aResp.status}`;
+              if (window.Swal && typeof window.Swal.fire === 'function') {
+                await Swal.fire('Falha na autorização', errText, 'error');
+              } else {
+                alert('Falha na autorização: ' + errText);
+              }
+            }
+          } catch (err) {
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('Erro de rede', String(err), 'error');
+            } else {
+              alert('Erro de rede: ' + String(err));
+            }
+          }
+        });
+      </script>
   </body>
   </html>

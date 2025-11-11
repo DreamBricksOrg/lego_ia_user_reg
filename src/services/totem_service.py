@@ -103,7 +103,7 @@ async def init_qr_for_session(session_id: str) -> Dict[str, Any]:
     Gera short link + QR (PNG/SVG) no encurtador e salva na sessão.
     Long URL: CADASTRO_BASE_URL?sid=<session_id>
     """
-    long_url = f"{settings.CADASTRO_BASE_URL.rstrip('/')}?sid={session_id}"
+    long_url = f"{settings.CADASTRO_BASE_URL.rstrip('/')}/api/lego/termos?sid={session_id}"
     shortener_data, short_url = await create_short_link(long_url, session_id=session_id, name=f"LEGO sid {session_id}")
     s = await get_session(session_id)
     if s is None:

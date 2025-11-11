@@ -7,6 +7,7 @@
   <title>CPF</title>
     <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='base.css') }}" />
     <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='cpf.css') }}" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -19,12 +20,13 @@
         <input type="text" id="cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" />
       </div>
 
-      <div id="next-btn" class="next-btn"></div>
+      <div id="next-btn" class="next-btn" style="opacity:0.6; pointer-events:none; cursor:not-allowed;"></div>
     </div>
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const input = document.getElementById('cpf');
+      const nextBtn = document.getElementById('next-btn');
       if (!input) return;
 
       function maskCPF(value) {
@@ -43,9 +45,180 @@
       input.addEventListener('input', function () {
         const masked = maskCPF(input.value);
         input.value = masked;
+        updateButton();
+        // Se CPF válido durante digitação, executa checagem de sessão
+        const digits = onlyDigits(input.value);
+        if (isValidCPF(digits)) {
+          maybeCheckAndNavigate(digits);
+        }
       });
 
       input.value = maskCPF(input.value);
+      updateButton();
+
+      function onlyDigits(str) {
+        return (str || '').replace(/\D/g, '');
+      }
+
+      function isValidCPF(cpfStr) {
+        const cpf = onlyDigits(cpfStr);
+        if (cpf.length !== 11) return false;
+        if (/^(\d)\1{10}$/.test(cpf)) return false; // todos dígitos iguais
+
+        // primeiro dígito verificador
+        let sum = 0;
+        for (let i = 0; i < 9; i++) sum += parseInt(cpf[i], 10) * (10 - i);
+        let rest = sum % 11;
+        const dv1 = (rest < 2) ? 0 : 11 - rest;
+        if (dv1 !== parseInt(cpf[9], 10)) return false;
+
+        // segundo dígito verificador
+        sum = 0;
+        for (let i = 0; i < 10; i++) sum += parseInt(cpf[i], 10) * (11 - i);
+        rest = sum % 11;
+        const dv2 = (rest < 2) ? 0 : 11 - rest;
+        if (dv2 !== parseInt(cpf[10], 10)) return false;
+
+        return true;
+      }
+
+      function enableBtn() {
+        nextBtn.style.opacity = '1';
+        nextBtn.style.pointerEvents = 'auto';
+        nextBtn.style.cursor = 'pointer';
+      }
+
+      function disableBtn() {
+        nextBtn.style.opacity = '0.6';
+        nextBtn.style.pointerEvents = 'none';
+        nextBtn.style.cursor = 'not-allowed';
+      }
+
+      function updateButton() {
+        const digits = onlyDigits(input.value);
+        // Habilita com 11 dígitos; validação completa só no clique
+        if (digits.length === 11) {
+          enableBtn();
+        } else {
+          disableBtn();
+        }
+      }
+
+      let inFlight = false;
+      let lastCheckedCpf = null;
+
+      async function checkSessionAndNavigate(validCpfDigits) {
+        if (inFlight) return;
+        inFlight = true;
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const sid = params.get('sid');
+          if (!sid) {
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('Sessão inválida', 'Parâmetro "sid" ausente na URL.', 'error');
+            } else {
+              alert('Sessão inválida: parâmetro sid ausente.');
+            }
+            return;
+          }
+
+          const res = await fetch('/totem/session/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: sid, cpf: validCpfDigits })
+          });
+
+          if (!res.ok) {
+            const errText = await res.text();
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('Erro no CRM', errText || 'Falha ao consultar serviço.', 'error');
+            } else {
+              alert('Erro no CRM: ' + (errText || 'Falha ao consultar serviço.'));
+            }
+            const target = new URL('/api/lego/continue', window.location.origin);
+            target.search = window.location.search; // preserva query params
+            window.location.href = target.toString();
+            return;
+          }
+
+          const data = await res.json().catch(() => ({}));
+          const session = data && data.session ? data.session : {};
+          const crm = session && session.crm ? session.crm : session;
+          const isRegistered = !!(crm && crm.isRegistered);
+          const isComplete = !!(crm && crm.isComplete);
+
+          if (isRegistered && isComplete) {
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('usuário já cadastrado', '', 'success');
+            } else {
+              alert('usuário já cadastrado');
+            }
+            const target = new URL('/api/lego/continue', window.location.origin);
+            target.search = window.location.search; // preserva query params
+            window.location.href = target.toString();
+          } else {
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('usuário não adastrado', '', 'warning');
+            } else {
+              alert('usuário não adastrado');
+            }
+            const target = new URL('/api/lego/dados', window.location.origin);
+            target.search = window.location.search; // preserva query params
+            window.location.href = target.toString();
+          }
+        } catch (e) {
+          if (window.Swal && typeof window.Swal.fire === 'function') {
+            await Swal.fire('Erro inesperado', 'Tente novamente mais tarde.', 'error');
+          } else {
+            alert('Erro inesperado. Tente novamente mais tarde.');
+          }
+          const target = new URL('/api/lego/continue', window.location.origin);
+          target.search = window.location.search; // preserva query params
+          window.location.href = target.toString();
+        } finally {
+          inFlight = false;
+        }
+      }
+
+      function maybeCheckAndNavigate(digits) {
+        if (digits && digits.length === 11 && digits !== lastCheckedCpf) {
+          lastCheckedCpf = digits;
+          checkSessionAndNavigate(digits);
+        }
+      }
+
+      nextBtn.addEventListener('click', function (e) {
+        const digits = onlyDigits(input.value);
+        if (!isValidCPF(digits)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          if (window.Swal && typeof window.Swal.fire === 'function') {
+            Swal.fire('CPF inválido', 'Não é um CPF válido. Verifique o número digitado.', 'error');
+          } else {
+            alert('CPF inválido. Não é um CPF válido. Verifique o número digitado.');
+          }
+          return false;
+        }
+        // CPF válido: executa checagem e navegação
+        checkSessionAndNavigate(digits);
+      });
+
+      // Enter também dispara checagem
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          const digits = onlyDigits(input.value);
+          if (!isValidCPF(digits)) {
+            e.preventDefault();
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              Swal.fire('CPF inválido', 'Não é um CPF válido. Verifique o número digitado.', 'error');
+            } else {
+              alert('CPF inválido. Não é um CPF válido. Verifique o número digitado.');
+            }
+            return false;
+          }
+          checkSessionAndNavigate(digits);
+        }
+      });
     });
   </script>
 </body>

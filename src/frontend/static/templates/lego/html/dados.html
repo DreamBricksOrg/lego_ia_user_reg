@@ -6,6 +6,7 @@
     <title>Dados</title>
     <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='base.css') }}" />
     <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='dados.css') }}" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body>
     <div class="container">
@@ -20,7 +21,7 @@
 
           <div class="input-container">
             <h3>TELEFONE</h3>
-            <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required />
+            <input type="tel" id="telefone" name="telefone" inputmode="numeric" placeholder="00 00000-0000" maxlength="13" required />
           </div> 
           
           <div class="input-container">
@@ -66,10 +67,257 @@
           </div>
         </form>
 
-      <img src="{{ url_for('templates_lego_assets', path='images/bt.png') }}" alt="next-btn" id="next-btn">
+      <img src="{{ url_for('templates_lego_assets', path='images/bt.png') }}" alt="next-btn" id="next-btn" style="opacity:0.6; pointer-events:auto; cursor:pointer;">
   </div>
     </div>
 
     <script src="{{ url_for('templates_lego_assets', path='js/dados.js') }}"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+        const nextBtn = document.getElementById('next-btn');
+        if (!form || !nextBtn) return;
+
+        const fields = {
+          email: form.querySelector('#email'),
+          telefone: form.querySelector('#telefone'),
+          aniversario: form.querySelector('#aniversario'),
+          cep: form.querySelector('#cep'),
+          logradouro: form.querySelector('#logradouro'),
+          numero: form.querySelector('#numero'),
+          bairro: form.querySelector('#bairro'),
+          cidade: form.querySelector('#cidade'),
+          estado: form.querySelector('#estado'),
+          // complemento é opcional
+        };
+
+        function onlyDigits(str) { return (str || '').replace(/\D/g, ''); }
+
+        function isValidEmail(value) {
+          const v = (value || '').trim();
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        }
+
+        function isValidTelefone(value) {
+          const digits = onlyDigits(value);
+          // Brasil: 10 (fixo) ou 11 (celular) dígitos
+          return digits.length === 10 || digits.length === 11;
+        }
+
+        // Máscara: "AA XXXXX-XXXX" para 11 dígitos, "AA XXXX-XXXX" para 10 dígitos
+        function maskTelefone(value) {
+          const d = onlyDigits(value).slice(0, 11);
+          if (d.length <= 2) return d;
+          const aa = d.slice(0, 2);
+          const rest = d.slice(2);
+          if (rest.length <= 4) {
+            return `${aa} ${rest}`;
+          }
+          if (rest.length <= 8) {
+            // 10 dígitos totais: AA XXXX-XXXX
+            return `${aa} ${rest.slice(0, 4)}-${rest.slice(4)}`;
+          }
+          // 11 dígitos totais: AA XXXXX-XXXX
+          return `${aa} ${rest.slice(0, 5)}-${rest.slice(5, 9)}`;
+        }
+
+        function isValidCEP(value) {
+          const digits = onlyDigits(value);
+          return digits.length === 8;
+        }
+
+        function isNonEmpty(value) {
+          return (value || '').trim().length > 0;
+        }
+
+        function isValidEstado(value) {
+          const v = (value || '').trim();
+          return /^[A-Za-z]{2}$/.test(v);
+        }
+
+        // Deve ser maior ou igual a 18 anos
+        function isAdult(value) {
+          const v = (value || '').trim();
+          if (!v) return false;
+          const parts = v.split('-').map(Number);
+          if (parts.length !== 3) return false;
+          const [by, bm, bd] = parts;
+          if (!by || !bm || !bd) return false;
+
+          const today = new Date();
+          let age = today.getFullYear() - by;
+          const monthDiff = (today.getMonth() + 1) - bm;
+          const dayDiff = today.getDate() - bd;
+          if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+            age--;
+          }
+          return age >= 18;
+        }
+
+        function enableBtn() {
+          nextBtn.style.opacity = '1';
+          nextBtn.style.pointerEvents = 'auto';
+          nextBtn.style.cursor = 'pointer';
+        }
+
+        function disableBtn() {
+          // Mantém clicável para exibir alerta, mas com aparência de desabilitado
+          nextBtn.style.opacity = '0.6';
+          nextBtn.style.pointerEvents = 'auto';
+          nextBtn.style.cursor = 'pointer';
+        }
+
+        function validateAll() {
+          const missing = [];
+
+          if (!isValidEmail(fields.email.value)) missing.push('E-mail válido');
+          if (!isValidTelefone(fields.telefone.value)) missing.push('Telefone (10 ou 11 dígitos)');
+          if (!isAdult(fields.aniversario.value)) missing.push('Data de nascimento (maior de 18 anos)');
+          if (!isValidCEP(fields.cep.value)) missing.push('CEP (8 dígitos)');
+          if (!isNonEmpty(fields.logradouro.value)) missing.push('Logradouro');
+          if (!isNonEmpty(fields.numero.value)) missing.push('Número');
+          if (!isNonEmpty(fields.bairro.value)) missing.push('Bairro');
+          if (!isNonEmpty(fields.cidade.value)) missing.push('Cidade');
+          if (!isValidEstado(fields.estado.value)) missing.push('Estado (UF, 2 letras)');
+
+          if (missing.length === 0) {
+            enableBtn();
+          } else {
+            disableBtn();
+          }
+          return missing;
+        }
+
+        // Atualiza botão ao editar campos
+        Object.values(fields).forEach((el) => {
+          if (!el) return;
+          el.addEventListener('input', validateAll);
+          el.addEventListener('change', validateAll);
+        });
+
+        // Aplica máscara ao telefone durante a digitação
+        if (fields.telefone) {
+          fields.telefone.addEventListener('input', function () {
+            const masked = maskTelefone(fields.telefone.value);
+            if (masked !== fields.telefone.value) {
+              fields.telefone.value = masked;
+            }
+          });
+          // Aplica máscara ao valor inicial (se houver)
+          fields.telefone.value = maskTelefone(fields.telefone.value);
+        }
+
+        // Estado inicial
+        validateAll();
+
+        // Clique do botão: alerta se inválido, submete se válido
+        nextBtn.addEventListener('click', async function (e) {
+          const missing = validateAll();
+          if (missing.length > 0) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            const msg = 'Preencha os campos:\n- ' + missing.join('\n- ');
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('Campos obrigatórios faltando', msg, 'warning');
+            } else {
+              alert('Campos obrigatórios faltando:\n' + msg);
+            }
+            return false;
+          }
+          // Todos válidos: monta payload e chama /totem/session/register
+          const params = new URLSearchParams(window.location.search);
+          const sid = params.get('sid');
+          if (!sid) {
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('Sessão não encontrada', 'Parâmetro "sid" ausente na URL.', 'error');
+            } else {
+              alert('Sessão não encontrada: parâmetro "sid" ausente na URL.');
+            }
+            return false;
+          }
+
+          
+          let cpf = null;
+          try {
+            const sRes = await fetch(`/totem/session/${encodeURIComponent(sid)}`);
+            if (!sRes.ok) throw new Error('Falha ao ler sessão');
+            const sData = await sRes.json();
+            cpf = sData?.crm?.cpf || null;
+          } catch (err) {
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('Erro ao recuperar sessão', String(err), 'error');
+            } else {
+              alert('Erro ao recuperar sessão: ' + String(err));
+            }
+            return false;
+          }
+
+          if (!cpf) {
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('CPF não encontrado na sessão', 'Retorne à etapa anterior para validar o CPF.', 'warning');
+            } else {
+              alert('CPF não encontrado na sessão. Retorne à etapa anterior para validar o CPF.');
+            }
+            return false;
+          }
+
+          const address = {
+            zipCode: onlyDigits(fields.cep.value),
+            street: (fields.logradouro.value || '').trim(),
+            number: (fields.numero.value || '').trim(),
+            neighborhood: (fields.bairro.value || '').trim(),
+            city: (fields.cidade.value || '').trim(),
+            state: (fields.estado.value || '').trim().toUpperCase(),
+          };
+          const complemento = (form.querySelector('#complemento')?.value || '').trim();
+          if (complemento) {
+            address.complement = complemento;
+          }
+
+          const payload = {
+            sessionId: sid,
+            cpf: cpf,
+            email: (fields.email.value || '').trim(),
+            mobileNumber: onlyDigits(fields.telefone.value),
+            birthday: (fields.aniversario.value || '').trim(),
+            // fullName é opcional; omitido se não disponível
+            address: address,
+          };
+
+          try {
+            const resp = await fetch('/totem/session/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            let data = {};
+            try { data = await resp.json(); } catch (_) {}
+            if (resp.ok && (data?.ok ?? true)) {
+              if (window.Swal && typeof window.Swal.fire === 'function') {
+                await Swal.fire('Dados enviados', 'Cadastro atualizado com sucesso.', 'success');
+              }
+              window.location.href = `/api/lego/continue${window.location.search || ''}`;
+              return true;
+            }
+            const errText = (data && data.detail) ? String(data.detail) : `Status ${resp.status}`;
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('Falha no cadastro', `Não foi possível atualizar os dados (${errText}). Vamos continuar o fluxo.`, 'error');
+            } else {
+              alert('Falha no cadastro: ' + errText + '\nVamos continuar o fluxo.');
+            }
+            window.location.href = `/api/lego/continue${window.location.search || ''}`;
+            return false;
+          } catch (err) {
+            if (window.Swal && typeof window.Swal.fire === 'function') {
+              await Swal.fire('Erro de rede', String(err), 'error');
+            } else {
+              alert('Erro de rede: ' + String(err));
+            }
+            window.location.href = `/api/lego/continue${window.location.search || ''}`;
+            return false;
+          }
+        });
+      });
+    </script>
   </body>
   </html>

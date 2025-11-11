@@ -11,15 +11,15 @@ from schemas.totem import (
 )
 from services.crm_service import CRMService
 from schemas.crm import CheckRequest, UpsertRequest
-from utils.serial_comm import SerialComm
+from utils.udp_sender import UDPSender
 from core.config import settings
 
 
 router = APIRouter(prefix="/totem", tags=["totem"])
 
 
-# instâncias de serial
-serial_comm = SerialComm(port=settings.SERIAL_PORT, baudrate=settings.SERIAL_BAUDRATE)
+# instância de envio UDP
+udp_sender = UDPSender(port=settings.UDP_PORT)
 serial_lock = asyncio.Lock()
 
 
@@ -41,7 +41,7 @@ async def accept_terms(body: TermsRequest):
     if not body.accepted:
         raise HTTPException(400, "terms not accepted")
     async with serial_lock:
-        serial_comm.send("start")
+        udp_sender.send("INSTRUCOES")
     return await advance(body.sessionId, "check")
 
 
@@ -103,7 +103,7 @@ async def session_register(body: RegisterWithSession):
 @router.post("/session/continue")
 async def session_continue(body: ContinueRequest):
     async with serial_lock:
-        serial_comm.send("start")
+        udp_sender.send("INSTRUCOES")
     return await advance(body.sessionId, "instructions")
 
 
@@ -118,9 +118,9 @@ async def session_advance(body: NextRequest):
     step = body.step
     async with serial_lock:
         if step == "capture":
-            serial_comm.send("capture")
+            udp_sender.send("CAPTURA")
         elif step == "approve":
-            serial_comm.send("approve")
+            udp_sender.send("VALIDACAO")
         elif step == "instructions":
-            serial_comm.send("start")
+            udp_sender.send("INSTRUCOES")
     return await advance(body.sessionId, step)

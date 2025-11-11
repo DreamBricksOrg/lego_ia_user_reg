@@ -43,9 +43,68 @@
         </p>
       </div>
 
-      <img id="accept-btn" src="{{ url_for('templates_lego_assets', path='images/termos_bt.png') }}" alt="accept-btn">
+      <img id="accept-btn" src="{{ url_for('templates_lego_assets', path='images/termos_bt.png') }}" alt="accept-btn" style="opacity:0.6; pointer-events:none; cursor:not-allowed;">
     </div>
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('accept-btn');
+      const terms = document.querySelector('.terms-container');
+      btn.dataset.enabled = 'false';
+
+      const enableBtn = () => {
+        if (btn.dataset.enabled === 'true') return;
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
+        btn.style.cursor = 'pointer';
+        btn.dataset.enabled = 'true';
+      };
+
+      // Se não houver scroll (conteúdo curto), habilita imediatamente
+      if (terms && terms.scrollHeight <= terms.clientHeight) {
+        enableBtn();
+      }
+
+      // Habilita após rolar até o final
+      if (terms) {
+        terms.addEventListener('scroll', () => {
+          const reachedBottom = (terms.scrollTop + terms.clientHeight) >= (terms.scrollHeight - 4);
+          if (reachedBottom) enableBtn();
+        });
+      }
+
+      btn.addEventListener('click', async () => {
+        if (btn.dataset.enabled !== 'true') return;
+
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get('sid');
+        if (!sessionId) {
+          console.error('sessionId ausente nos query params');
+          return;
+        }
+
+        try {
+          const res = await fetch('/totem/session/terms', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId, accepted: true })
+          });
+          if (!res.ok) {
+            const text = await res.text();
+            console.error('Falha ao aceitar termos', text);
+            return;
+          }
+
+          const target = new URL('/api/lego/cpf', window.location.origin);
+          target.search = params.toString();
+          window.location.assign(target.toString());
+        } catch (e) {
+          console.error('Erro ao aceitar termos', e);
+        }
+      });
+    });
+  </script>
 
 </body>
 
