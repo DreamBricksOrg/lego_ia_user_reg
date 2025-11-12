@@ -4,10 +4,23 @@ import asyncio
 from fastapi import APIRouter, HTTPException
 
 from services.totem_service import (
-    create_session, get_session, set_crm_result, mark_authorized, advance, init_qr_for_session
+    create_session,
+    get_session,
+    set_crm_result,
+    mark_authorized,
+    advance,
+    init_qr_for_session,
+    close_session,
 )
 from schemas.totem import (
-    QRInitRequest, TermsRequest, QRInitResponse, StartResponse, CheckWithSession, ContinueRequest, NextRequest
+    QRInitRequest,
+    TermsRequest,
+    QRInitResponse,
+    StartResponse,
+    CheckWithSession,
+    ContinueRequest,
+    NextRequest,
+    CloseRequest,
 )
 from services.crm_service import CRMService
 from utils.shortener_client import create_short_link
@@ -157,3 +170,10 @@ async def session_advance(body: NextRequest):
         elif step == "instructions":
             udp_sender.send("INSTRUCOES")
     return await advance(body.sessionId, step)
+
+
+@router.post("/session/close")
+async def session_close(body: CloseRequest):
+    """Encerrar sessão após resultado final (igual Skyn)."""
+    s = await close_session(body.sessionId)
+    return {"ok": True, "session": s}

@@ -34,3 +34,6 @@ class ContinueRequest(BaseModel):
 class NextRequest(BaseModel):
     sessionId: str
     step: str  # "capture" | "approve" | "result" etc.
+
+class CloseRequest(BaseModel):
+    sessionId: str

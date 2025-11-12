@@ -117,3 +117,17 @@ async def init_qr_for_session(session_id: str) -> Dict[str, Any]:
     })
     await save_session(s)
     return s
+
+async def close_session(session_id: str) -> Dict[str, Any]:
+    """Encerra a sessão e impede novas ações."""
+    s = await get_session(session_id)
+    if not s:
+        raise KeyError("invalid session")
+    s["step"] = "closed"
+    s.setdefault("flags", {})["ended"] = True
+    s["endedAt"] = _now_iso()
+
+    # Atualiza no Redis e expira mais rápido
+    r = get_redis()
+    await r.set(_key(session_id), json.dumps(s), ex=60)
+    return s
