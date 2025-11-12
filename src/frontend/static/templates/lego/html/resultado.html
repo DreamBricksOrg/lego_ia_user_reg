@@ -55,6 +55,9 @@
           console.warn("Imagem não encontrada. Informe o parâmetro 'image_url' na URL.");
         }
       }
+
+      // Log: acesso à página de resultado / QRCode
+      sendLog('SERVIDOR_ACESSOU_RESULTADO').catch(() => {});
     });
 
     const processedImage = document.getElementById("drawing-image");
@@ -72,7 +75,34 @@
     });
   </script>
   <script>
+    async function sendLog(message, extraData = {}) {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const sid = params.get('sid') || undefined;
+        const payload = {
+          message,
+          level: 'INFO',
+          sessionId: sid,
+          data: {
+            image_url: document.getElementById('drawing-image')?.src || null,
+            path: window.location.pathname,
+            ...extraData,
+          },
+        };
+        await fetch('/log/create-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } catch (err) {
+        console.warn('Falha ao enviar log', message, err);
+      }
+    }
+
     async function downloadImage() {
+      // Log: clique no botão de download
+      sendLog('SERVIDOR_BAIXOU_IMAGEM').catch(() => {});
+
       const image = document.querySelector('#drawing-image');
       if (!image || !image.src) {
         Swal.fire("Imagem não encontrada", "Não conseguimos carregar sua imagem. Tente novamente.", "error");
@@ -106,6 +136,9 @@
     }
 
     async function shareImage() {
+      // Log: clique no botão de compartilhar
+      sendLog('SERVIDOR_COMPARTILHOU_IMAGEM').catch(() => {});
+
       try {
         const image = document.querySelector('#drawing-image');
         const response = await fetch(image.src, {
