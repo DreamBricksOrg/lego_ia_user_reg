@@ -12,6 +12,7 @@ from core.agent import sdk_log
 from routes.api import router as api_router
 from routes.crm import router as crm_router
 from routes.totem import router as totem_router
+from routes.log import router as log_router
 
 from middlewares.replay_guard import ReplayGuardMiddleware
 from middlewares.sdk_audit import SdkAuditMiddleware
@@ -20,30 +21,35 @@ from middlewares.sdk_audit import SdkAuditMiddleware
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "frontend" / "static"
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # === STARTUP ===
     async def _delayed_startup_log():
+        # pequeno atraso para garantir que env/loop estão ok
         await asyncio.sleep(0.3)
         await sdk_log(
-            "INFO",
-            "LogCenter startup",
+            level="INFO",
+            message="server_startup",
+            tags=["startup"],
             data={"env": settings.ENV, "version": "0.1-dev"},
             status="OK",
         )
-
     asyncio.create_task(_delayed_startup_log())
     yield
     # === SHUTDOWN ===
     await sdk_log(
-        "INFO",
-        "LogCenter shutdown",
+        level="INFO",
+        message="server_shutdown",
+        tags=["shutdown"],
         data={"env": settings.ENV, "version": "0.1-dev"},
-        status="INFO",
+        status="OK",
     )
 
+
 def create_app() -> FastAPI:
-    app = FastAPI(title=settings.APP_NAME, version="0.1.-dev", lifespan=lifespan)
+    app = FastAPI(title=settings.APP_NAME, version="0.1-dev", lifespan=lifespan)
+
     # Structlog setup
     structlog.configure(
         processors=[
@@ -58,29 +64,29 @@ def create_app() -> FastAPI:
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
-    log = structlog.get_logger()
 
-    app = FastAPI()
+    # CORS + middlewares
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
         allow_credentials=True,
         allow_methods=["*"],
-        allow_headers=["*"]
+        allow_headers=["*"],
     )
     app.add_middleware(SdkAuditMiddleware)
     app.add_middleware(ReplayGuardMiddleware, ttl_seconds=4)
 
-
+    # Static
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     app.mount("/design", StaticFiles(directory=STATIC_DIR / "design"), name="design")
     app.mount("/templates/lego/assets", StaticFiles(directory=STATIC_DIR / "templates" / "lego" / "assets"), name="templates_lego_assets")
     app.mount("/templates/lego/css", StaticFiles(directory=STATIC_DIR / "templates" / "lego" / "css"), name="templates_lego_css")
 
-
+    # Routers
     app.include_router(api_router)
     app.include_router(crm_router)
     app.include_router(totem_router)
+    app.include_router(log_router)
 
     @app.get("/alive")
     async def alive():

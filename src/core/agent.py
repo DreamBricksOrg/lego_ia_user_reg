@@ -21,4 +21,4 @@ async def sdk_log(
     """
     if not settings.LOGCENTER_SDK_ENABLED:
         return False
-    return await _sender.send_log(level, message, tags=tags, data=data, request_id=request_id, status=status)
+    return await _sender.send_log_detailed(level, message, tags=tags, data=data, request_id=request_id, status=status)

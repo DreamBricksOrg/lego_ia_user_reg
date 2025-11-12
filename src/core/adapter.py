@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime, timezone
 
 import httpx
@@ -10,10 +10,9 @@ from core.config import settings
 
 class LogCenterSender:
     """
-    Adaptação do log_sender.py do SDK:
-    - Corrige redirect (usa /logs/ + follow_redirects=True)
-    - Garante campos usuais (level upper, timestamp ISO)
-    - Loga corpo de erro quando não for 2xx (debug de 422)
+    Envia logs para POST {base}/logs/.
+    - follow_redirects=True
+    - Retorno detalhado p/ depurar (status e corpo)
     """
 
     def __init__(
@@ -21,7 +20,7 @@ class LogCenterSender:
         base_url: Optional[str] = None,
         project_id: Optional[str] = None,
         api_key: Optional[str] = None,
-        timeout: float = 5.0,
+        timeout: float = 10.0,
     ):
         self.base_url = (base_url or settings.LOGCENTER_BASE_URL or "").rstrip("/")
         self.project_id = project_id or settings.LOGCENTER_PROJECT_ID
@@ -29,15 +28,15 @@ class LogCenterSender:
         self.timeout = httpx.Timeout(timeout, connect=timeout)
 
     def _headers(self) -> Dict[str, str]:
-        if not self.api_key:
-            return {}
-        return {
+        h = {
+            "accept": "application/json",
             "Content-Type": "application/json",
-            "X-API-Key": self.api_key,
-            "X-Internal-LogCenter": "1",
         }
+        if self.api_key:
+            h["x_api_key"] = self.api_key
+        return h
 
-    async def send_log(
+    async def send_log_detailed(
         self,
         level: str,
         message: str,
@@ -46,14 +45,12 @@ class LogCenterSender:
         data: Optional[Dict[str, Any]] = None,
         request_id: Optional[str] = None,
         status: Optional[str] = None,
-    ) -> bool:
+    ) -> Dict[str, Any]:
         if not (self.base_url and self.project_id and self.api_key):
-            return False
+            return {"ok": False, "error": "missing_config"}
 
         level = (level or "INFO").upper()
         now_iso = datetime.now(timezone.utc).isoformat()
-
-        # se não vier explícito, inferimos
         if status is None:
             status = "ERROR" if level in ("ERROR", "CRITICAL", "FATAL") else "OK"
 
@@ -73,20 +70,38 @@ class LogCenterSender:
 
         url = f"{self.base_url}/logs/"
 
-        async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
-            try:
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout, follow_redirects=True) as client:
                 resp = await client.post(url, headers=self._headers(), json=payload)
-            except Exception:
-                return False
+        except Exception as e:
+            return {"ok": False, "exception": str(e), "url": url}
 
-            if 200 <= resp.status_code < 300:
-                return True
+        try:
+            body = resp.json()
+        except Exception:
+            body = {"text": resp.text}
 
-            try:
-                err = resp.json()
-            except Exception:
-                err = {"text": resp.text}
-            return False
+        return {
+            "ok": 200 <= resp.status_code < 300,
+            "status": resp.status_code,
+            "response": body,
+            "url": url,
+        }
+
+    async def send_log(
+        self,
+        level: str,
+        message: str,
+        *,
+        tags: Optional[List[str]] = None,
+        data: Optional[Dict[str, Any]] = None,
+        request_id: Optional[str] = None,
+        status: Optional[str] = None,
+    ) -> bool:
+        res = await self.send_log_detailed(
+            level, message, tags=tags, data=data, request_id=request_id, status=status
+        )
+        return bool(res.get("ok"))
 
     def send_log_sync(
         self,
@@ -96,6 +111,7 @@ class LogCenterSender:
         tags: Optional[List[str]] = None,
         data: Optional[Dict[str, Any]] = None,
         request_id: Optional[str] = None,
+        status: Optional[str] = None,
     ) -> bool:
         try:
             loop = asyncio.get_running_loop()
@@ -103,7 +119,7 @@ class LogCenterSender:
             loop = None
 
         if loop and loop.is_running():
-            loop.create_task(self.send_log(level, message, tags=tags, data=data, request_id=request_id))
+            loop.create_task(self.send_log(level, message, tags=tags, data=data, request_id=request_id, status=status))
             return True
         else:
-            return asyncio.run(self.send_log(level, message, tags=tags, data=data, request_id=request_id))
+            return asyncio.run(self.send_log(level, message, tags=tags, data=data, request_id=request_id, status=status))
