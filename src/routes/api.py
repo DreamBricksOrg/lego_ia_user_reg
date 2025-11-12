@@ -44,3 +44,7 @@ async def termos(request: Request):
 @router.get("/lego/continue", response_class=HTMLResponse, include_in_schema=False)
 async def continue_page(request: Request):
     return templates.TemplateResponse("lego/html/continue.html", {"request": request})
+
+@router.get("/lego/erro", response_class=HTMLResponse, include_in_schema=False)
+async def erro(request: Request):
+    return templates.TemplateResponse("lego/html/erro.html", {"request": request})
