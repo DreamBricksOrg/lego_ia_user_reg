@@ -7,6 +7,7 @@
   <title>Resultado</title>
     <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='base.css') }}" />
     <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='resultado.css') }}" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -33,6 +34,29 @@
   </div>
 
   <script>
+    // Define a imagem a partir do query param `image_url` (fallback para template var)
+    document.addEventListener('DOMContentLoaded', () => {
+      const imgEl = document.getElementById('drawing-image');
+      const params = new URLSearchParams(window.location.search);
+      const qp = params.get('image_url');
+      if (qp) {
+        try {
+          const decoded = decodeURIComponent(qp);
+          imgEl.src = decoded;
+        } catch (e) {
+          console.error('Falha ao decodificar image_url:', e);
+        }
+      }
+
+      if (!imgEl.src) {
+        if (typeof Swal !== 'undefined') {
+          Swal.fire('Imagem não encontrada', "Informe o parâmetro 'image_url' na URL.", 'warning');
+        } else {
+          console.warn("Imagem não encontrada. Informe o parâmetro 'image_url' na URL.");
+        }
+      }
+    });
+
     const processedImage = document.getElementById("drawing-image");
     const overlay = document.getElementById("image-overlay");
     const zoomedImg = document.getElementById("zoomed-img");

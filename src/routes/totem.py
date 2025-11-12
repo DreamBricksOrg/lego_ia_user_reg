@@ -10,6 +10,7 @@ from schemas.totem import (
     QRInitRequest, TermsRequest, QRInitResponse, StartResponse, CheckWithSession, ContinueRequest, NextRequest
 )
 from services.crm_service import CRMService
+from utils.shortener_client import create_short_link
 from schemas.crm import CheckRequest, UpsertRequest
 from utils.udp_sender import UDPSender
 from core.config import settings
@@ -59,6 +60,40 @@ async def qrcode_init(body: QRInitRequest):
         qr_png=qr.get("qr_png"),
         qr_svg=qr.get("qr_svg"),
     )
+
+
+@router.get("/qrcode/create")
+async def qrcode_create(
+    long_url: str,
+    name: str | None = None,
+    callback_url: str | None = None,
+    slug: str | None = None,
+):
+    """
+    Endpoint genérico para criar link curto e QR sem vínculo com sessão.
+    Parâmetros via querystring:
+      - long_url (obrigatório)
+      - name (opcional)
+      - callback_url (opcional)
+      - slug (opcional)
+    """
+    try:
+        data, short_url = await create_short_link(
+            long_url,
+            session_id=None,
+            name=name,
+            callback_url=callback_url,
+            slug=slug,
+        )
+        return {
+            "ok": True,
+            "slug": data.slug,
+            "short_url": short_url,
+            "qr_png": str(data.qr_png),
+            "qr_svg": str(data.qr_svg),
+        }
+    except Exception as e:
+        raise HTTPException(502, str(e))
 
 
 @router.post("/session/check")
