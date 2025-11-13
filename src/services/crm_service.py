@@ -28,20 +28,32 @@ class CRMService:
     return {**res, "nextStep": next_step}
 
 
-  def upsert(self, *, cpf: str, email: str, mobileNumber: str, birthday: date, fullName: Optional[str], address: Dict[str, Any]) -> Dict[str, Any]:
-    payload = {
-      "cpf": cpf,
-      "email": email,
-      "mobileNumber": mobileNumber,
-      "birthday": birthday.isoformat(),
-      "address": address,
-    }
-    if fullName:
-      payload["fullName"] = fullName
+  def upsert(
+      self,
+      *,
+      cpf: str,
+      email: str,
+      mobileNumber: str,
+      birthday: date,
+      fullName: Optional[str],
+      address: Dict[str, Any],
+  ) -> Dict[str, Any]:
+      payload = {
+          "cpf": cpf,
+          "email": email,
+          "mobileNumber": mobileNumber,
+          "birthday": birthday.isoformat(),
+          "address": address,
+          "originRegistryId": settings.CRM_ORIGIN_ID,
+      }
+      if fullName:
+          payload["fullName"] = fullName
 
-    logger.info("crm_upsert_request", extra={"cpf_mask": cpf[-4:], "has_name": bool(fullName)})
-    return self.client.upsert_client(payload)
-
+      logger.info(
+          "crm_upsert_request",
+          extra={"cpf_mask": cpf[-4:], "has_name": bool(fullName)},
+      )
+      return self.client.upsert_client(payload)
 
   def interaction(self, *, clientId: Optional[str], cpf: Optional[str], email: Optional[str], phone: Optional[str], track: Dict[str, Any], metadata: Optional[dict], customFields: Optional[dict]) -> Dict[str, Any]:
     track_data: Dict[str, Any] = {

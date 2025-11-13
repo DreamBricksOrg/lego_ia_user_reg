@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     CRM_BASE_URL: str = Field(..., env="CRM_BASE_URL")
     CRM_API_KEY: str =  Field(..., env="CRM_API_KEY")
     CRM_MALL_ID: int = Field(84, env="CRM_MALL_ID")
+    CRM_ORIGIN_ID: int = Field(24, env="CRM_ORIGIN_ID")
     CRM_TRACK_TYPE: str = Field("APPLICATION", env="CRM_TRACK_TYPE")
     CRM_TRACK_NAME: str = Field("Totem LEGO – IA", env="CRM_TRACK_NAME")
     UDP_PORT: int = Field(5004, env="UDP_PORT")
