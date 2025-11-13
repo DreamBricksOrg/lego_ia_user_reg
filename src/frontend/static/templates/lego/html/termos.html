@@ -7,6 +7,7 @@
   <title>Termos</title>
     <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='base.css') }}" />
     <link rel="stylesheet" href="{{ url_for('templates_lego_css', path='termos.css') }}" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -43,7 +44,7 @@
         </p>
       </div>
 
-      <img id="accept-btn" src="{{ url_for('templates_lego_assets', path='images/termos_bt.png') }}" alt="accept-btn" style="opacity:0.6; pointer-events:none; cursor:not-allowed;">
+      <img id="accept-btn" src="{{ url_for('templates_lego_assets', path='images/termos_bt.png') }}" alt="accept-btn" style="opacity:0.6; cursor:not-allowed;">
     </div>
   </div>
 
@@ -75,7 +76,14 @@
       }
 
       btn.addEventListener('click', async () => {
-        if (btn.dataset.enabled !== 'true') return;
+        if (btn.dataset.enabled !== 'true') {
+          if (typeof Swal !== 'undefined') {
+            Swal.fire('Leitura obrigatória', 'É necessário ler todos os termos para continuar.', 'warning');
+          } else {
+            alert('É necessário ler todos os termos para continuar.');
+          }
+          return;
+        }
 
         const params = new URLSearchParams(window.location.search);
         const sessionId = params.get('sid');
@@ -96,7 +104,7 @@
             return;
           }
 
-          const target = new URL('/api/lego/cpf', window.location.origin);
+          const target = new URL('/api/lego/continue', window.location.origin);
           target.search = params.toString();
           window.location.assign(target.toString());
         } catch (e) {

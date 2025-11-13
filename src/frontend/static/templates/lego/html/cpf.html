@@ -149,9 +149,9 @@
 
           if (isRegistered && isComplete) {
             if (window.Swal && typeof window.Swal.fire === 'function') {
-              await Swal.fire('usuário já cadastrado', '', 'success');
+              await Swal.fire('usuário já autorizado', '', 'success');
             } else {
-              alert('usuário já cadastrado');
+              alert('usuário já autorizado');
             }
             const target = new URL('/api/lego/continue', window.location.origin);
             target.search = window.location.search; // preserva query params
