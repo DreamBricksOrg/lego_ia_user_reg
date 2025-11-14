@@ -39,7 +39,8 @@ async def resultado(request: Request, image_url: str = ""):
 
 @router.get("/lego/termos", response_class=HTMLResponse, include_in_schema=False)
 async def termos(request: Request):
-    return templates.TemplateResponse("lego/html/termos.html", {"request": request})
+    from core.config import settings
+    return templates.TemplateResponse("lego/html/termos.html", {"request": request, "use_crm": settings.USE_CRM})
 
 @router.get("/lego/continue", response_class=HTMLResponse, include_in_schema=False)
 async def continue_page(request: Request):

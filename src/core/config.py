@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     SERIAL_PORT: str = Field("COM3", env="SERIAL_PORT")
     SERIAL_BAUDRATE: int = Field(9600, env="SERIAL_BAUDRATE")
     REDIS_URL: str = Field("redis://redis:6379/0", env="REDIS_URL")
+    USE_CRM: bool = Field(False, env="USE_CRM")
 
 
     class Config:
