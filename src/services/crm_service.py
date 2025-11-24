@@ -38,12 +38,17 @@ class CRMService:
       fullName: Optional[str],
       address: Dict[str, Any],
   ) -> Dict[str, Any]:
+      address_str: Dict[str, str] = {
+        str(key): "" if value is None else str(value)
+        for key, value in address.items()
+      }
+
       payload = {
           "cpf": cpf,
           "email": email,
           "mobileNumber": mobileNumber,
           "birthday": birthday.isoformat(),
-          "address": address,
+          "address": address_str,
           "originRegistryId": settings.CRM_ORIGIN_ID,
       }
       if fullName:

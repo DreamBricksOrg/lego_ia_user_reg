@@ -19,7 +19,7 @@ class Address(BaseModel):
   zipCode: str
   street: str
   number: str
-  complement: Optional[str] = None
+  complement: Optional[str] = ""
   neighborhood: str
   city: str
   state: str
