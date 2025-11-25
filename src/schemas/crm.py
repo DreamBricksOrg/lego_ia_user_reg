@@ -41,7 +41,7 @@ class UpsertResponse(BaseModel):
 
 
 class InteractionTrack(BaseModel):
-  name: str
+  name: Optional[str] = None
   description: Optional[str] = None
   type: Optional[str] = None
   startDate: Optional[datetime] = None

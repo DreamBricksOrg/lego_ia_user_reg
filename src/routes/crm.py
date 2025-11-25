@@ -52,7 +52,7 @@ def crm_upsert(body: UpsertRequest, svc: CRMService = Depends(get_service)):
 def crm_interaction(body: InteractionRequest, svc: CRMService = Depends(get_service)):
   try:
     out = svc.interaction(
-      clientId=body.clientId,
+      clientId="",
       cpf=body.cpf,
       email=body.email,
       phone=body.phone,

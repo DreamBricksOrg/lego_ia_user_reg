@@ -1,5 +1,5 @@
 import structlog
-from datetime import date
+from datetime import date, datetime
 from typing import Any, Dict, Optional
 
 from integration.crm_client import CRMClient
@@ -66,8 +66,8 @@ class CRMService:
       "trackType": track.get("type") or settings.CRM_TRACK_TYPE,
       "name": track.get("name") or settings.CRM_TRACK_NAME,
       "description": track.get("description"),
-      "startDate": track.get("startDate"),
-      "endDate": track.get("endDate"),
+      "startDate": track.get("startDate") or datetime.now().isoformat(),
+      "endDate": track.get("endDate") or datetime.now().isoformat(),
     },
       "customer": {},
     }
