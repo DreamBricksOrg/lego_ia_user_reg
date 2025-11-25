@@ -13,8 +13,9 @@
 <body>
   <div class="container"></div>
 
-  <script>
+  <script> 
     document.addEventListener('DOMContentLoaded', async function () {
+      sendLog('TELA_CONTINUE').catch(() => {});
       const params = new URLSearchParams(window.location.search);
       const sid = params.get('sid');
       if (!sid) {

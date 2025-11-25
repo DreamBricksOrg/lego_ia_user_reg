@@ -388,10 +388,34 @@ E-mail: lgpd@grupohsi.com.br
   </div>
 
   <script>
+    async function sendLog(message, extraData = {}) {
+      try {
+        //sendLog('FALHA_CADASTRO').catch(() => {});
+        const params = new URLSearchParams(window.location.search);
+        const sid = params.get('sid') || undefined;
+        const payload = {
+          message,
+          level: 'INFO',
+          sessionId: sid,
+          data: {
+            image_url: document.getElementById('drawing-image')?.src || null,
+            path: window.location.pathname,
+            ...extraData,
+          },
+        };
+        await fetch('/log/create-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } catch (err) {
+        console.warn('Falha ao enviar log', message, err);
+      }
+    }
     document.addEventListener('DOMContentLoaded', () => {
       const USE_CRM = {{ use_crm | tojson }};
       const btn = document.getElementById('accept-btn');
-
+      sendLog('TELA_TERMOS').catch(() => {});
       // Botão sempre ativo: sem validação de leitura
       if (btn) {
         btn.style.opacity = '1';

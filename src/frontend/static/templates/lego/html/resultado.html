@@ -36,6 +36,7 @@
   <script>
     // Define a imagem a partir do query param `image_url` (fallback para template var)
     document.addEventListener('DOMContentLoaded', () => {
+      sendLog('TELA_RESULTADO').catch(() => {});
       const imgEl = document.getElementById('drawing-image');
       const params = new URLSearchParams(window.location.search);
       const qp = params.get('image_url');

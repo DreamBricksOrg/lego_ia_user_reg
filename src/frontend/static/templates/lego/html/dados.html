@@ -73,7 +73,32 @@
 
     <script src="{{ url_for('templates_lego_assets', path='js/dados.js') }}"></script>
     <script>
+      async function sendLog(message, extraData = {}) {
+        try {
+          //sendLog('FALHA_CADASTRO').catch(() => {});
+          const params = new URLSearchParams(window.location.search);
+          const sid = params.get('sid') || undefined;
+          const payload = {
+            message,
+            level: 'INFO',
+            sessionId: sid,
+            data: {
+              image_url: document.getElementById('drawing-image')?.src || null,
+              path: window.location.pathname,
+              ...extraData,
+            },
+          };
+          await fetch('/log/create-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+        } catch (err) {
+          console.warn('Falha ao enviar log', message, err);
+        }
+      }
       document.addEventListener('DOMContentLoaded', function () {
+        sendLog('TELA_DADOS').catch(() => {});
         const form = document.querySelector('form');
         const nextBtn = document.getElementById('next-btn');
         if (!form || !nextBtn) return;
@@ -294,6 +319,7 @@
             try { data = await resp.json(); } catch (_) {}
             if (resp.ok && (data?.ok ?? true)) {
               if (window.Swal && typeof window.Swal.fire === 'function') {
+                sendLog('CADASTRO_EFETUADO').catch(() => {});
                 await Swal.fire('Dados enviados', 'Cadastro atualizado com sucesso.', 'success');
               }
               window.location.href = `/api/lego/continue${window.location.search || ''}`;
@@ -301,16 +327,20 @@
             }
             const errText = (data && data.detail) ? String(data.detail) : `Status ${resp.status}`;
             if (window.Swal && typeof window.Swal.fire === 'function') {
+              sendLog('FALHA_CADASTRO').catch(() => {});
               await Swal.fire('Falha no cadastro', `Não foi possível atualizar os dados (${errText}). Vamos continuar o fluxo.`, 'error');
             } else {
+              sendLog('FALHA_CADASTRO').catch(() => {});
               alert('Falha no cadastro: ' + errText + '\nVamos continuar o fluxo.');
             }
             window.location.href = `/api/lego/continue${window.location.search || ''}`;
             return false;
           } catch (err) {
             if (window.Swal && typeof window.Swal.fire === 'function') {
+              sendLog('ERRO_DE_REDE').catch(() => {});
               await Swal.fire('Erro de rede', String(err), 'error');
             } else {
+              sendLog('ERRO_DE_REDE').catch(() => {});
               alert('Erro de rede: ' + String(err));
             }
             window.location.href = `/api/lego/continue${window.location.search || ''}`;
