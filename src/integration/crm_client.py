@@ -2,7 +2,7 @@ import structlog
 from typing import Any, Dict, Optional
 import httpx
 
-from src.core.config import settings
+from core.config import settings
 
 logger = structlog.get_logger()
 

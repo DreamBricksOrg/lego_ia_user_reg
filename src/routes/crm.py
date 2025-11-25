@@ -1,7 +1,7 @@
 import structlog
 from fastapi import APIRouter, Depends, HTTPException
 
-from src.schemas.crm import (
+from schemas.crm import (
   CheckRequest,
   CheckResponse,
   UpsertRequest,
@@ -52,8 +52,6 @@ def crm_upsert(body: UpsertRequest, svc: CRMService = Depends(get_service)):
 def crm_interaction(body: InteractionRequest, svc: CRMService = Depends(get_service)):
   try:
     out = svc.interaction(
-      clientId="",
-      cpf=body.cpf,
       email=body.email,
       phone=body.phone,
       track=body.track.model_dump(),

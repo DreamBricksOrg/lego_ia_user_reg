@@ -60,7 +60,7 @@ class CRMService:
       )
       return self.client.upsert_client(payload)
 
-  def interaction(self, *, clientId: Optional[str], cpf: Optional[str], email: Optional[str], phone: Optional[str], track: Dict[str, Any], metadata: Optional[dict], customFields: Optional[dict]) -> Dict[str, Any]:
+  def interaction(self, *, email: Optional[str], phone: Optional[str], track: Dict[str, Any], metadata: Optional[dict], customFields: Optional[dict]) -> Dict[str, Any]:
     track_data: Dict[str, Any] = {
       "track": {
       "trackType": track.get("type") or settings.CRM_TRACK_TYPE,
@@ -72,10 +72,6 @@ class CRMService:
       "customer": {},
     }
     
-    if clientId:
-      track_data["customer"]["id"] = clientId
-    if cpf:
-      track_data["customer"]["cpf"] = cpf
     if email:
       track_data["customer"]["email"] = email
     if phone:

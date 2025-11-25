@@ -322,7 +322,6 @@
                 await Swal.fire('Dados enviados', 'Cadastro atualizado com sucesso.', 'success');
               }
               const payloadCRM = {
-                cpf: cpf,
                 email: (fields.email.value || '').trim(),
                 phone: onlyDigits(fields.telefone.value),
                 track: {

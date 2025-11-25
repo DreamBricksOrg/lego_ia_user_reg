@@ -49,7 +49,6 @@ class InteractionTrack(BaseModel):
 
 
 class InteractionRequest(BaseModel):
-  cpf: Optional[CPF] = None
   email: Optional[EmailStr] = None
   phone: Optional[str] = None
   track: InteractionTrack
