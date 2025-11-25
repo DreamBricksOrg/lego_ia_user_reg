@@ -390,7 +390,6 @@ E-mail: lgpd@grupohsi.com.br
   <script>
     async function sendLog(message, extraData = {}) {
       try {
-        //sendLog('FALHA_CADASTRO').catch(() => {});
         const params = new URLSearchParams(window.location.search);
         const sid = params.get('sid') || undefined;
         const payload = {
