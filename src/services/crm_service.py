@@ -50,6 +50,12 @@ class CRMService:
           "birthday": birthday.isoformat(),
           "address": address_str,
           "originRegistryId": settings.CRM_ORIGIN_ID,
+          "signatures": {
+            "dataUsage": {
+              "valid": True,
+              "originId": settings.CRM_ORIGIN_ID,
+            },
+          },
       }
       if fullName:
           payload["fullName"] = fullName
