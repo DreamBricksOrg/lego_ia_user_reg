@@ -55,6 +55,10 @@ class CRMService:
               "valid": True,
               "originId": settings.CRM_ORIGIN_ID,
             },
+            "communicationEmail": {
+              "valid": True,
+              "originId": settings.CRM_ORIGIN_ID,
+            },
           },
       }
       if fullName:
